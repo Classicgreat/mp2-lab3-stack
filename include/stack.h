@@ -87,5 +87,11 @@ public:
     }
     return pMem[top_id--];
   }
+  T top() {
+    if (IsEmpty()) {
+      throw "Stack is empty for top";
+    }
+    return pMem[top_id];
+  }
   void clear() noexcept { top_id = -1; }
 };
