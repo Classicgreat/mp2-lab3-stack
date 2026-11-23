@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-enum class TokenType { NUMBER, OPERATION, OPEN_BRACKET, CLOSE_BRACKET };
+enum class TokenType { NUMBER, OPERATION, OPEN_BRACKET, CLOSE_BRACKET, FUNC };
 
 struct Token {
   TokenType type;
@@ -44,6 +44,8 @@ public:
 
   void SetInfix(std::string expr);
   double CalcPostfix();
+  double Calc();
+  double eval(std::string expr);
 };
 
 #endif

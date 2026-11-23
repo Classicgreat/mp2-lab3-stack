@@ -1,4 +1,5 @@
 #include "../include/calculator.h"
+#include <string>
 
 void Calculator::infix_to_cont() {
   infix_cont.clear();
@@ -62,6 +63,95 @@ void Calculator::SetInfix(std::string expr) {
   infix = "(" + expr + ")";
   infix_to_cont();
   ToPostfix();
+}
+
+double Calculator::eval(std::string expr) {
+  SetInfix(expr);
+  return CalcPostfix();
+}
+double Calculator::Calc() {
+  oper.clear();
+  nums.clear();
+  for (int i = 0; i < infix_cont.GetSize(); ++i) {
+    if (infix_cont[i].type == TokenType::OPEN_BRACKET)
+      oper.push(infix_cont[i]);
+    else if (infix_cont[i].type == TokenType::NUMBER)
+      nums.push(infix_cont[i].val);
+    else if (infix_cont[i].type == TokenType::CLOSE_BRACKET) {
+      while (oper.top().type != TokenType::OPEN_BRACKET) {
+        double op2 = nums.pop(), op1 = nums.pop();
+        double tmp;
+        std::string op = oper.pop().data;
+        if (op == "+")
+          tmp = op1 + op2;
+        if (op == "-")
+          tmp = op1 - op2;
+        if (op == "*")
+          tmp = op1 * op2;
+        if (op == "/") {
+          if (op2 == 0.0)
+            throw "division by zero";
+          tmp = op1 / op2;
+        }
+        if (op == "^")
+          tmp = pow(op1, op2);
+        nums.push(tmp);
+      }
+      oper.pop();
+    } else if (infix_cont[i].type == TokenType::OPERATION) {
+      while (oper.top().Prior() >= infix_cont[i].Prior()) {
+        while (!oper.IsEmpty() && oper.top().type != TokenType::OPEN_BRACKET &&
+               oper.top().Prior() >= infix_cont[i].Prior()) {
+          Token op = oper.pop();
+
+          if (op.data == "u-") {
+            if (nums.IsEmpty())
+              throw "not enough operands";
+            double a = nums.pop();
+            nums.push(-a);
+          } else {
+            if (nums.IsEmpty())
+              throw "not enough operands";
+            double op2 = nums.pop();
+
+            if (nums.IsEmpty())
+              throw "not enough operands";
+            double op1 = nums.pop();
+
+            double tmp = 0.0;
+
+            if (op.data == "+") {
+              tmp = op1 + op2;
+            } else if (op.data == "-") {
+              tmp = op1 - op2;
+            } else if (op.data == "*") {
+              tmp = op1 * op2;
+            } else if (op.data == "/") {
+              if (op2 == 0.0)
+                throw "division by zero";
+              tmp = op1 / op2;
+            } else if (op.data == "^") {
+              tmp = pow(op1, op2);
+            } else {
+              throw "unknown operation";
+            }
+
+            nums.push(tmp);
+          }
+        }
+        oper.push(infix_cont[i]);
+      }
+    }
+  }
+  if (nums.IsEmpty())
+    throw "not enough operands";
+
+  double res = nums.pop();
+
+  if (!nums.IsEmpty())
+    throw "too much operands";
+
+  return res;
 }
 
 void Calculator::ToPostfix() {
